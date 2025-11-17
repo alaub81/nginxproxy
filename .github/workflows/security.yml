@@ -24,6 +24,6 @@ jobs:
 
       # Upload SARIF produced by the action (results.sarif)
       - name: Upload SARIF to Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
