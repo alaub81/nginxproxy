@@ -1,0 +1,100 @@
+# GoAccess Configuration File
+# For more information, see: https://goaccess.io/man#config
+
+# Set the log file to be analyzed.
+log-file /var/log/nginx/access_all.log
+date-format %d/%b/%Y
+time-format %T
+# vhost + Combined
+log-format %v %h - %e [%d:%t %^] "%r" %s %b "%R" "%u" %C "%M" %K %k
+#log-format COMBINED
+
+# Enable real-time HTML output.
+real-time-html true
+
+# Set output HTML path.
+output /var/www/goaccess/index.html
+
+# Exclude IP addresses from being counted.
+exclude-ip 127.0.0.1
+exclude-ip 192.168.22.22
+
+# Persist parsed data into disk.
+persist true
+# Load previously stored data from disk.
+restore true
+# Path where the on-disk database files are stored.
+db-path /srv/db
+# Only keeps last X days of data.
+keep-last 90
+
+# Statische Typen erweitern (sonst zählt GoAccess sie nicht als „static“)
+static-file .css
+static-file .js
+static-file .png
+static-file .jpg
+static-file .jpeg
+static-file .gif
+static-file .svg
+static-file .webp
+static-file .avif
+static-file .ico
+static-file .woff
+static-file .woff2
+static-file .map
+
+# Ignore known bots/crawlers
+ignore-crawlers true
+# Include an additional delimited list of browsers/crawlers/feeds etc.
+browsers-file /etc/goaccess/browsers.list
+unknowns-as-crawlers true
+# IP address anonymization
+anonymize-ip true
+# Pedantic IP address anonymization
+anonymize-level 1
+# Do not add 4xx client errors to the unique visitors count.
+4xx-to-unique-count false
+# Ignore parsing and displaying one or multiple status code(s)
+ignore-status 429
+# Include static files that contain a query string in the static files
+all-static-files true
+# Display real OS names.
+real-os true
+
+# Ignore referrer from being counted.
+#ignore-referrer www.google.com
+# Only hide referrer from being counted for certain vhosts
+hide-referrer lhlab.wiki 
+hide-referrer test.lhlab.wiki
+
+# Ignore request's query string
+no-query-string true
+
+# Set default HTML preferences.
+html-prefs {"theme":"darkBlue","perPage":20,"visitors":{"plot":{"chartType":"bar"}},"visit_time":{"plot":{"chartType":"bar"}}}
+ignore-panel KEYPHRASES
+
+# Set GeoIP database path.
+geoip-database /usr/share/GeoIP/GeoLite2-City.mmdb
+geoip-database /usr/share/GeoIP/GeoLite2-Country.mmdb
+geoip-database /usr/share/GeoIP/GeoLite2-ASN.mmdb
+
+# Sort panels on initial load by visitors, data, and bandwidth.
+sort-panel BROWSERS,BY_VISITORS,DESC
+sort-panel CACHE_STATUS,BY_VISITORS,DESC
+sort-panel GEO_LOCATION,BY_VISITORS,DESC
+sort-panel HOSTS,BY_VISITORS,DESC
+sort-panel KEYPHRASES,BY_VISITORS,DESC
+sort-panel MIME_TYPE,BY_VISITORS,DESC
+sort-panel NOT_FOUND,BY_BW,DESC
+sort-panel OS,BY_VISITORS,DESC
+sort-panel REFERRERS,BY_VISITORS,DESC
+sort-panel REFERRING_SITES,BY_VISITORS,DESC
+sort-panel REMOTE_USER,BY_VISITORS,DESC
+sort-panel REQUESTS,BY_VISITORS,DESC
+sort-panel REQUESTS_STATIC,BY_BW,DESC
+sort-panel STATUS_CODES,BY_VISITORS,DESC
+sort-panel TLS_TYPE,BY_VISITORS,DESC
+sort-panel VIRTUAL_HOSTS,BY_VISITORS,DESC
+sort-panel VISITORS,BY_DATA,DESC
+sort-panel VISIT_TIMES,BY_DATA,DESC

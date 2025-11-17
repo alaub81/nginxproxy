@@ -1,0 +1,66 @@
+# Global NGINX configuration for MediaWiki with imgproxy and GoAccess logging
+
+# --- Define custom log format for GoAccess ---
+log_format goaccess_logging
+    '$server_name $remote_addr - $remote_user '
+    '[$time_local] "$request" $status $body_bytes_sent '
+    '"$http_referer" "$http_user_agent" '
+    '$upstream_cache_status '
+    '"$sent_http_content_type" '
+    '$ssl_protocol $ssl_cipher';  
+
+# --- Define upstream backends ---
+upstream website_prod {
+    server 127.0.0.1:8080;
+}
+# upstream website_test {
+#     server 127.0.0.1:8181;
+# }
+upstream imgproxy_backend {
+    server 127.0.0.1:8989;
+}
+upstream goaccess_backend {
+    server 127.0.0.1:7890;
+}
+
+# --- Define expiration times for different content types ---
+map $sent_http_content_type $expires {
+    default                             off;
+    text/css                            max;
+    text/javascript                     max;
+    application/javascript              max;
+    ~image/                             max;
+    application/pdf		                max;
+    "text/css; charset=utf-8"           max;
+    "text/javascript; charset=utf-8"    max;
+}
+
+# --- Image format selection based on Accept header ---
+map $http_accept $imgfmt {
+    ~avif  avif;
+    ~webp  webp;
+    default png;
+}
+
+# --- manual cache bypass via ?nocache=... ---
+map $arg_nocache $bypass_cache { default 0; "" 0; ~. 1; }
+
+# --- MediaWiki HTML cache (anonymous) ---
+proxy_cache_path /var/cache/nginx/mw levels=1:2 keys_zone=mwcache:100m inactive=60m max_size=2g;
+
+# --- Static/media cache (images/CSS/JS via proxy) ---
+proxy_cache_path /var/cache/nginx/img levels=1:2 keys_zone=img_cache:100m inactive=60d max_size=5g;
+
+# --- Bypass rules for logged-in users / unsafe methods/actions ---
+map $http_cookie $mw_cache_bypass {
+    default 0;
+    "~*(session|UserID|Token|LoggedIn)=" 1;  # logged-in or edit token
+}
+map $request_method $mw_bypass_method { default 0; POST 1; }
+map $arg_action     $mw_bypass_action { default 0; "~^(edit|submit|history|raw|watch|delete|purge)$" 1; }
+
+# --- Optional: manual nocache switch (?nocache=1) ---
+map $arg_nocache $mw_bypass_nocache { default 0; "1" 1; }
+
+# --- Optional: split cache for MobileFrontend toggle (desktop vs. mobile) ---
+map $http_cookie $mf_useformat { default ""; "~*mf_useformat=([^;]+)" $1; }

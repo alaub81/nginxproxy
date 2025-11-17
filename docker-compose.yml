@@ -1,0 +1,142 @@
+services:
+  nginx:
+      image: nginx:mainline-alpine
+      command: "/bin/sh -c 'while :; do sleep 72h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+      environment:
+        - TZ=${TZ:-UTC}
+      labels:
+        com.centurylinklabs.watchtower.enable: "true"
+      volumes:
+        - nginx_cache:/var/cache/nginx
+        - nginx_logs:/var/log/nginx
+        - ./data/nginx/conf.d:/etc/nginx/conf.d/:ro
+        # Certificates and Webroot for Certbot
+        - ./data/letsencrypt/webroot:/srv/certbot/www:ro
+        - ./data/letsencrypt/conf:/etc/letsencrypt:ro
+        # Mailcow SSL Certificates (comment if not needed)
+        - /opt/mailcow-dockerized/data/assets/ssl:/etc/ssl/mail/:ro
+        # GoAccess-HTML
+        - goaccess_www:/srv/goaccess/www:ro
+      restart: unless-stopped
+      depends_on:
+        - goaccess
+      network_mode: "host"
+
+  imgproxy:
+    image: ghcr.io/imgproxy/imgproxy:latest
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-UTC}
+      IMGPROXY_BIND: ${IMGPROXY_BIND:-8080}
+      IMGPROXY_ALLOWED_SOURCES: ${IMGPROXY_ALLOWED_SOURCES:-"http://127.0.0.1:8080"}
+      IMGPROXY_ALLOW_LOOPBACK_SOURCE_ADDRESSES: true
+      IMGPROXY_QUALITY: ${IMGPROXY_QUALITY:-75}
+      IMGPROXY_WEBP_QUALITY: ${IMGPROXY_WEBP_QUALITY:-75}
+      IMGPROXY_STRIP_METADATA: ${IMGPROXY_STRIP_METADATA:-true}
+      IMGPROXY_MAX_SRC_RESOLUTION: ${IMGPROXY_MAX_SRC_RESOLUTION:-50}
+      IMGPROXY_DOWNLOAD_TIMEOUT: ${IMGPROXY_DOWNLOAD_TIMEOUT:-5}
+      IMGPROXY_READ_REQUEST_TIMEOUT: ${IMGPROXY_READ_REQUEST_TIMEOUT:-10}
+      IMGPROXY_ENFORCE_WEBP: ${IMGPROXY_ENFORCE_WEBP:-false}
+      IMGPROXY_PREFER_WEBP: ${IMGPROXY_PREFER_WEBP:-true}
+      IMGPROXY_LOG_LEVEL: ${IMGPROXY_LOG_LEVEL:-info}
+      IMGPROXY_USE_ETAG: ${IMGPROXY_USE_ETAG:-true}
+      IMGPROXY_ETAG_BUSTER: ${IMGPROXY_ETAG_BUSTER:-1}
+      IMGPROXY_USE_LAST_MODIFIED: ${IMGPROXY_USE_LAST_MODIFIED:-true}
+    network_mode: "host"
+
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    environment:
+      - TZ=${TZ:-UTC}
+    labels:
+        com.centurylinklabs.watchtower.enable: "true"
+    volumes:
+      - ./data/letsencrypt/conf:/etc/letsencrypt
+      - ./data/letsencrypt/lib:/var/lib/letsencrypt
+      - ./data/letsencrypt/webroot:/data/letsencrypt
+      - ./data/letsencrypt/logs:/var/log/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --max-log-backups 14; sleep 24h & wait $${!}; done;'"
+    networks:
+      app-nw:
+
+  goaccess:
+    image: allinurl/goaccess:latest
+    restart: unless-stopped
+    depends_on:
+      geoipupdate:
+        condition: service_healthy
+    environment:
+      - TZ=${TZ:-UTC}
+    volumes:
+      - nginx_logs:/var/log/nginx:ro  # same volume as with NGINX
+      - goaccess_db:/srv/db
+      - goaccess_www:/var/www/goaccess
+      - geoip_db:/usr/share/GeoIP
+      - ./data/goaccess/goaccess.conf:/etc/goaccess/goaccess.conf:ro
+      - ./data/goaccess/browsers.list:/etc/goaccess/browsers.list:ro
+      - ./data/letsencrypt/conf:/etc/letsencrypt:ro
+    command:
+      - --ssl-key=${GA_SSL_KEY:-}
+      - --ssl-cert=${GA_SSL_CERT:-}
+      - --ws-url=${GA_WS_URL:-}
+      - --origin=${GA_ORIGIN:-}
+      - --port=7890
+      - --config-file=/etc/goaccess/goaccess.conf
+    ports:
+      - ${GOACCESS_PORT:-7890}:7890
+    networks:
+      app-nw:
+
+  geoipupdate:
+    image: ghcr.io/maxmind/geoipupdate:latest
+    restart: unless-stopped
+    env_file:
+      - geoipupdate.env
+    environment:
+      TZ: ${TZ:-UTC}
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    volumes:
+      - geoip_db:/usr/share/GeoIP
+    healthcheck:
+      test: ["CMD", "sh", "-c", "test -f /usr/share/GeoIP/GeoLite2-City.mmdb -a -f /usr/share/GeoIP/GeoLite2-ASN.mmdb"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      app-nw:
+
+  logrotate:
+    image: alpine:3.20
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-UTC}
+    volumes:
+      - nginx_logs:/var/log/nginx  # same volume as with NGINX
+      - ./data/logrotate:/etc/logrotate.d:ro
+    command: >
+      sh -c "
+        apk add --no-cache logrotate tzdata &&
+        echo '0 */6 * * * /usr/sbin/logrotate -v /etc/logrotate.d/nginx-access' > /etc/crontabs/root &&
+        crond -f -l 8
+      "
+    networks:
+      app-nw:
+
+networks:
+  app-nw:
+    internal: false
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: app-${PROJECT_NAME}
+
+volumes:
+  nginx_cache:
+  nginx_logs:
+  goaccess_db:
+  goaccess_www:
+  geoip_db:
