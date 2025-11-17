@@ -1,0 +1,74 @@
+name: CI — Lint & Validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  # for Super-Linter annotations
+  checks: write
+  statuses: write
+
+jobs:
+  superlinter:
+    name: Super-Linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run GitHub Super-Linter (slim)
+        uses: github/super-linter/slim@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BRANCH: main
+          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_BASH: true
+          VALIDATE_YAML: true
+          VALIDATE_JSON: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_DOCKERFILE_HADOLINT: false  # we'll run hadolint in a dedicated job
+
+  hadolint:
+    name: Dockerfile Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install hadolint
+        run: |
+          curl -sSfL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o /usr/local/bin/hadolint
+          chmod +x /usr/local/bin/hadolint
+      - name: Lint all Dockerfiles
+        run: |
+          set -e
+          found=0
+          while IFS= read -r -d '' f; do
+            echo "==> hadolint $f"
+            hadolint "$f"
+            found=$((found+1))
+          done < <(find . -type f -iname 'Dockerfile*' -print0)
+          if [ "$found" -eq 0 ]; then
+            echo "No Dockerfiles found"
+          fi
+
+  nginx-test:
+    name: Validate NGINX config (nginx -t)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate NGINX configuration
+        run: |
+          set -euo pipefail
+          # Adjust these paths if your repo structure differs:
+          CONF_DIR="data/nginx/conf.d"
+          INCLUDES_DIR="data/nginx/includes"
+          if [ ! -d "$CONF_DIR" ]; then
+            echo "::warning::NGINX conf dir '$CONF_DIR' not found. Skipping."
+            exit 0
+          fi
+          docker run --rm                 -v "$PWD/${CONF_DIR}:/etc/nginx/conf.d:ro"                 -v "$PWD/${INCLUDES_DIR}:/etc/nginx/conf.d/includes:ro"                 nginx:1.27-alpine sh -c "nginx -t -T"

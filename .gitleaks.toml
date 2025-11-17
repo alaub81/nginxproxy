@@ -1,0 +1,9 @@
+title = "gitleaks config"
+[allowlist]
+  description = "global allowlist"
+  files = [
+    '''^.*\.md$''',
+    '''^.*\.png$''',
+    '''^.*\.jpg$''',
+    '''^.*\.svg$''',
+  ]
