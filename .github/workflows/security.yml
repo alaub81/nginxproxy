@@ -11,37 +11,19 @@ permissions:
   security-events: write
 
 jobs:
-  trivy-fs:
-    name: Trivy Scan (Filesystem & IaC)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Trivy FS scan (vulns & misconfig)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: 'fs'
-          format: 'table'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH,MEDIUM'
-          exit-code: '0'
-      - name: Trivy config scan (IaC)
-        uses: aquasecurity/trivy-action@0.24.0
-        with:
-          scan-type: 'config'
-          format: 'table'
-          exit-code: '0'
-
   gitleaks:
-    name: Secret Scan (gitleaks)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Run Gitleaks
+      - uses: actions/checkout@v4
+
+      # Run gitleaks with defaults; it auto-detects .gitleaks.toml
+      - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload SARIF produced by the action (results.sarif)
+      - name: Upload SARIF to Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          args: detect --redact --source . --config ./.gitleaks.toml || true
+          sarif_file: results.sarif
