@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Super-Linter (blacklist)
-        uses: github/super-linter/slim@v6
+        uses: github/super-linter/slim@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: main
