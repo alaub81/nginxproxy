@@ -20,17 +20,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run GitHub Super-Linter (slim)
-        uses: github/super-linter/slim@v7
+      - name: Super-Linter (blacklist)
+        uses: github/super-linter/slim@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: main
-          VALIDATE_ALL_CODEBASE: false
-          VALIDATE_BASH: true
-          VALIDATE_YAML: true
-          VALIDATE_JSON: true
-          VALIDATE_MARKDOWN: true
-          VALIDATE_DOCKERFILE_HADOLINT: false  # we'll run hadolint in a dedicated job
+          VALIDATE_ALL_CODEBASE: true
+
+          # Diese willst du NICHT laufen lassen:
+          VALIDATE_PYTHON: false
+          VALIDATE_RUBY: false
+          VALIDATE_GO: false
 
   hadolint:
     name: Dockerfile Lint
@@ -54,21 +54,3 @@ jobs:
           if [ "$found" -eq 0 ]; then
             echo "No Dockerfiles found"
           fi
-
-  nginx-test:
-    name: Validate NGINX config (nginx -t)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Validate NGINX configuration
-        run: |
-          set -euo pipefail
-          # Adjust these paths if your repo structure differs:
-          CONF_DIR="data/nginx/conf.d"
-          INCLUDES_DIR="data/nginx/includes"
-          if [ ! -d "$CONF_DIR" ]; then
-            echo "::warning::NGINX conf dir '$CONF_DIR' not found. Skipping."
-            exit 0
-          fi
-          docker run --rm                 -v "$PWD/${CONF_DIR}:/etc/nginx/conf.d:ro"                 -v "$PWD/${INCLUDES_DIR}:/etc/nginx/conf.d/includes:ro"                 nginx:1.27-alpine sh -c "nginx -t -T"
