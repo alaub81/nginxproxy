@@ -43,13 +43,13 @@ A production‑ready Docker Compose stack that fronts your web apps (e.g., Media
 
 - Docker & Docker Compose
 - DNS A/AAAA records pointing to your host
-- Ports **80** and **443** reachable from the Internet
+- Ports **80** and **443** reachable from the internet
 
 ---
 
 ## Quickstart
 
-1. **Clone & enter the repo**
+1. **Clone & enter the repository**
 
    ```bash
    cd /opt

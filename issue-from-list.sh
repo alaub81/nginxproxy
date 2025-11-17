@@ -13,6 +13,7 @@
 # one certificate per line will be generated:
 # domains.list example:
 # > www.example.de test.example.de
+# > stats.example.com
 # > www.example.com test.example.com
 # > www.example.tld test.example.tld
 #########################################################################
