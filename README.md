@@ -1,4 +1,4 @@
-# Nginx Reverse‑Proxy Stack (MediaWiki + Certbot + imgproxy + GoAccess)
+# Nginx Reverse‑Proxy Stack (Nginx + Certbot + imgproxy + GoAccess)
 
 A production‑ready Docker Compose stack that fronts your web apps (e.g., MediaWiki)
 with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen images via imgproxy**
