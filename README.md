@@ -1,8 +1,12 @@
 # Nginx Reverse‑Proxy Stack (MediaWiki + Certbot + imgproxy + GoAccess)
 
-A production‑ready Docker Compose stack that fronts your web apps (e.g., MediaWiki) with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen images via imgproxy** (AVIF/WebP negotiation with caching & failover), and provides **real‑time traffic analytics with GoAccess** (WebSocket proxied, behind Basic Auth). It also includes sane **log rotation** and **proxy cache** settings.
+A production‑ready Docker Compose stack that fronts your web apps (e.g., MediaWiki)
+with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen images via imgproxy**
+(AVIF/WebP negotiation with caching & failover), and provides **real‑time traffic analytics with GoAccess**
+(WebSocket proxied, behind Basic Auth). It also includes sane **log rotation** and **proxy cache** settings.
 
-> The stack is designed to run on a single host with Docker, expose multiple virtual hosts, and keep configuration tidy via reusable “includes”.
+> The stack is designed to run on a single host with Docker, expose multiple virtual hosts,
+> and keep configuration tidy via reusable “includes”.
 
 ---
 
@@ -327,7 +331,8 @@ docker run --rm \
 
 ## Issue new SSL certificate
 
-if you like to issue a new certificate you need to setup DNS first. So the Domainname is pointing to the nginx servers IPv4 or IPv6 address. Then edit or create the `domains.list`:
+if you like to issue a new certificate you need to setup DNS first. So the Domainname is pointing to the nginx servers
+IPv4 or IPv6 address. Then edit or create the `domains.list`:
 
 - File with domain lists (one list per line, separate domains with spaces)
 - domains.list is used as the default, or the first parameter.
@@ -363,7 +368,8 @@ docker compose exec certbot certbot renew --cert-name lhlab.wiki --dry-run --for
 
 ## NGINX + IMGProxy Cache Test Suite `nginx_imgproxy_testing.sh`
 
-A compact Bash script to verify end‑to‑end image delivery and HTML/CDN caching for the NGINX / MediaWiki stack (NGINX reverse proxy + IMGProxy + MediaWiki). It prints focused headers and clear **OK/WARN/FAIL** results for each step.
+A compact Bash script to verify end‑to‑end image delivery and HTML/CDN caching for the NGINX / MediaWiki stack
+(NGINX reverse proxy + IMGProxy + MediaWiki). It prints focused headers and clear **OK/WARN/FAIL** results for each step.
 
 - Image cache warmup (**MISS → HIT**) with `X-Cache` validation
 - Content negotiation via `Accept:` (**AVIF**, **WebP**, PNG fallback)
@@ -390,4 +396,5 @@ chmod +x ./nginx_imgproxy_testing.sh
 ./nginx_imgproxy_testing.sh
 ```
 
-The script prints the relevant response headers and summarizes results at the end. A non‑zero exit code indicates at least one **FAIL**.
+The script prints the relevant response headers and summarizes results at the end.
+A non‑zero exit code indicates at least one **FAIL**.
