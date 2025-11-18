@@ -6,4 +6,5 @@ title = "gitleaks config"
     '''^.*\.png$''',
     '''^.*\.jpg$''',
     '''^.*\.svg$''',
+    "geoipupdate.env",
   ]
