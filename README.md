@@ -89,6 +89,7 @@ with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen ima
 
 3. **Define certificates to issue**
 
+   - Edit `issue-from-list.sh` variables on top
    - Edit `domains.list` — *one certificate per line*, first domain is the cert name:
 
      ```text
@@ -105,7 +106,7 @@ with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen ima
 5. **Issue certificates (staging/dry‑run first)**
 
    ```bash
-   ./scripts/issue-from-list.sh domains.list   # uses the running certbot container
+   ./issue-from-list.sh domains.list   # uses the running certbot container
    ```
 
    - The script supports `--staging` / `--dry-run` toggles internally; switch off for production issuance.
