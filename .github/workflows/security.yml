@@ -22,9 +22,3 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Upload SARIF produced by the action (results.sarif)
-      - name: Upload SARIF to Code Scanning
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: results.sarif
