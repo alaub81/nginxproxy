@@ -57,7 +57,7 @@ with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen ima
 
    ```bash
    cd /opt
-   git clone <this-repo-url> nginxproxy
+   git clone https://github.com/alaub81/nginxproxy.git
    cd nginxproxy
    ```
 
