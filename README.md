@@ -84,7 +84,7 @@ with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen ima
    cp data/goaccess/browsers.list.example data/goaccess/browsers.list
 
    # Logrotate sidecar
-   cp data/logrotate/nginx-acccess.example data/logrotate/conf/nginx-access
+   cp data/logrotate/nginx-access.example data/logrotate/nginx-access
    ```
 
 3. **Define certificates to issue**
