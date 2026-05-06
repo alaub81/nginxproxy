@@ -30,7 +30,7 @@ DOMAINS_FILE="${1:-domains.list}"
 
 # === Konfig ===
 # Email for registration with Let’s Encrypt
-EMAIL="andreas@laub-home.de"
+EMAIL="<YOURMAILADDRESS>"
 # Webroot path for validation (must match the Nginx setup)
 WEBROOT="/data/letsencrypt"
 # Let’s Encrypt Staging true/false
