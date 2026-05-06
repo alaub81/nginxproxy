@@ -80,8 +80,8 @@ with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen ima
    mkdir -p data/letsencrypt/{conf,webroot,lib,logs}
 
    # GoAccess config & dashboards
-   cp data/goaccess/goaccess.conf.example data/goaccess/conf/goaccess.conf
-   cp data/goaccess/browsers.list.example data/goaccess/conf/browsers.list
+   cp data/goaccess/goaccess.conf.example data/goaccess/goaccess.conf
+   cp data/goaccess/browsers.list.example data/goaccess/browsers.list
 
    # Logrotate sidecar
    cp data/logrotate/nginx-acccess.example data/logrotate/conf/nginx-access
