@@ -66,15 +66,17 @@ with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen ima
    ```bash
    # Environment
    cp .env.example .env
+   cp geoipupdate.env.example geoipupdate.env
 
    # Nginx vhosts & includes
    cp -r data/nginx/conf.d/global.conf.example data/nginx/conf.d/global.conf
-   cp -r data/nginx/conf.d/stats.example.com.conf.example data/nginx/conf.d/<stats.example.com.conf>
-   cp -r data/nginx/conf.d/www.example.com.conf.example data/nginx/conf.d/<www.example.com.conf>
    cp -r data/nginx/conf.d/includes/certbot.conf.example data/nginx/conf.d/includes/certbot.conf
    cp -r data/nginx/conf.d/includes/security-headers.conf.example data/nginx/conf.d/includes/security-headers.conf
    cp -r data/nginx/conf.d/includes/site-defaults.conf.example data/nginx/conf.d/includes/site-defaults.conf
    cp -r data/nginx/conf.d/includes/ssl.conf.example data/nginx/conf.d/includes/ssl.conf
+
+   # Copy at first the default vhost to get the ssl issueing running
+   cp -r data/nginx/conf.d/default_vhost.conf.example data/nginx/conf.d/default_vhost.conf
 
    # Certbot webroot & config (persisted)
    mkdir -p data/letsencrypt/{conf,webroot,lib,logs}
@@ -110,8 +112,33 @@ with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen ima
    ```
 
    - The script supports `--staging` / `--dry-run` toggles internally; switch off for production issuance.
+   - Change the E-Mail address on top of the script
+   - after using the `dry-run` and `staging`, just set it to false on top of the script.
 
-6. **Visit your sites**
+6. **Enable stats vhost**
+
+   - enable and configure your stats vhost.
+
+   ```bash
+   cp -r data/nginx/conf.d/stats.example.com.conf.example data/nginx/conf.d/<stats.example.com>.conf
+   ```
+
+7. **Configure your vhosts**
+   here is an example vhost file you could use.
+
+   ```bash
+   # enable stats vhost
+   cp -r data/nginx/conf.d/www.example.com.conf.example data/nginx/conf.d/<www.example.com>.conf
+   ```
+
+8. **Restart the stack**
+
+   ```bash
+   docker compose down
+   docker compose up -d
+   ```
+
+9. **Visit your sites**
 
    - Your app vhosts (e.g., `https://www.example.com`)
    - Real‑time stats at `https://stats.example.com` (behind Basic Auth)
