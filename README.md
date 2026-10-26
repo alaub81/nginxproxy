@@ -112,7 +112,7 @@ with **Nginx**, handles **TLS automation with Certbot**, serves **next‑gen ima
    ```
 
    - The script supports `--staging` / `--dry-run` toggles internally; switch off for production issuance.
-   - Change the E-Mail address on top of the script
+   - Change the email address on top of the script
    - after using the `dry-run` and `staging`, just set it to false on top of the script.
 
 6. **Enable stats vhost**
